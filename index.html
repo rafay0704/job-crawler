@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Listings</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+
+    .container {
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      color: #333;
+    }
+
+    header p {
+      font-size: 18px;
+    }
+
+    #jobCount {
+      font-weight: bold;
+    }
+
+    #jobList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .job-card {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .job-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .job-card h2 {
+      margin-top: 0;
+      color: #333;
+      font-size: 22px;
+    }
+
+    .job-card p {
+      color: #666;
+      margin: 5px 0;
+    }
+
+    .job-card a {
+      display: inline-block;
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    .job-card a:hover {
+      background-color: #0056b3;
+    }
+
+    .job-card .job-date {
+      font-size: 14px;
+      color: #888;
+    }
+
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .pagination button {
+      padding: 10px 15px;
+      margin: 0 5px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Job Listings</h1>
+      <p>Total Jobs: <span id="jobCount">0</span></p>
+    </header>
+
+    <section id="jobList">
+      <!-- Job cards will be populated here -->
+    </section>
+
+    <div class="pagination">
+      <button id="prevBtn" onclick="changePage(-1)" disabled>Previous</button>
+      <button id="nextBtn" onclick="changePage(1)">Next</button>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    const jobsPerPage = 12;
+    let jobData = [];
+
+    // Fetch job data from the JSON file and populate the cards
+    fetch('fish4jobs.json')
+      .then(response => response.json())
+      .then(data => {
+        jobData = data;
+        const jobCount = jobData.length;
+        document.getElementById('jobCount').textContent = jobCount;
+        displayJobs();
+      })
+      .catch(error => {
+        console.error('Error fetching job data:', error);
+      });
+
+    // Function to display jobs based on the current page
+    function displayJobs() {
+      const startIndex = (currentPage - 1) * jobsPerPage;
+      const endIndex = startIndex + jobsPerPage;
+      const jobsToDisplay = jobData.slice(startIndex, endIndex);
+
+      const jobList = document.getElementById('jobList');
+      jobList.innerHTML = '';
+
+      jobsToDisplay.forEach(job => {
+        const jobCard = document.createElement('div');
+        jobCard.classList.add('job-card');
+        
+        jobCard.innerHTML = `
+          <h2>${job.title}</h2>
+          <p><strong>Location:</strong> ${job.location}</p>
+          <p><strong>Salary:</strong> ${job.salary}</p>
+          <p><strong>Recruiter:</strong> ${job.recruiter}</p>
+          <p><strong>Description:</strong> ${job.description}</p>
+          <a href="${job.link}" target="_blank">View Job</a>
+          <p class="job-date"><strong>Date Posted:</strong> ${job.date}</p>
+        `;
+        
+        jobList.appendChild(jobCard);
+      });
+
+      // Update pagination buttons
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = currentPage * jobsPerPage >= jobData.length;
+    }
+
+    // Function to handle page change
+    function changePage(direction) {
+      currentPage += direction;
+      displayJobs();
+    }
+  </script>
+
+</body>
+</html>
